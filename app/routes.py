@@ -35,9 +35,6 @@ def create_friend():
   except KeyError:
     if "name" not in request_body or "location" not in request_body or "interest" not in request_body:
       return make_response({"details": "Missing required keys in request body"}, 400)
-
-  
-  new_friend= Friend.from_dict(request_body)
   
   db.session.add(new_friend)
   db.session.commit()
