@@ -65,12 +65,12 @@ def get_one_friend(id):
 #_________________________________________________________________________________________________________
 #-----------------------------UPDATE FRIENDS--------------------------------------------------------------
 #_________________________________________________________________________________________________________ 
-@friends_bp.route("/<id>", methods=["PUT"])
+@friends_bp.route("/<id>", methods=["PATCH"])
 def update_friend(id):
   friend= validate_model(Friend, id)
   request_body= request.get_json()
   
-  friend.update(request_body)
+  friend.update_friend(request_body)
   friend_dict= friend.to_dict()
   db.session.commit()
   
@@ -132,7 +132,7 @@ def read_one_date(id):
 #_________________________________________________________________________________________________________
 #-----------------------------UPDATE DATE ----------------------------------------------------------------
 #_________________________________________________________________________________________________________ 
-@dates_bp.route("/<id>", methods=["PUT"])   
+@dates_bp.route("/<id>", methods=["PATCH"])   
 def update_date(id):
     date = validate_model(Date, id)
     request_body = request.get_json()

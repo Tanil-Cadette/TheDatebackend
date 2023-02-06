@@ -14,7 +14,8 @@ class Friend(db.Model):
         friend_as_dict["id"]= self.id
         friend_as_dict["name"]= self.name
         friend_as_dict["interest"]= self.interest
-        friend_as_dict["location"]= self.location 
+        friend_as_dict["location"]= self.location
+        friend_as_dict["dates"]= [date.to_dict() for date in self.dates.all()]
         
         return friend_as_dict
     
@@ -25,13 +26,22 @@ class Friend(db.Model):
                         location=friend_data["location"])
         return new_friend
     
-    def update(self, req_body):
+    def update_friend(self, req_body):
         try:
-            self.name= req_body["name"]
-            self.interest= req_body["interest"]
-            self.location= req_body["location"]
-            new_date = Date.from_dict(req_body["dates"])
-            self.dates.append(new_date)
+            if "name" in req_body:
+                self.name = req_body["name"]
+            if "interest" in req_body:
+                self.interest = req_body["interest"]
+            if "location" in req_body:
+                self.location = req_body["location"]
+            if "dates" in req_body:
+                new_date = Date.from_dict(req_body["dates"])
+                self.dates.append(new_date)
+            # self.name= req_body["name"]
+            # self.interest= req_body["interest"]
+            # self.location= req_body["location"]
+            # new_date = Date.from_dict(req_body["dates"])
+            # self.dates.append(new_date)
         except KeyError as error:
             raise error
         
