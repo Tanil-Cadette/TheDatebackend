@@ -6,6 +6,7 @@ class Friend(db.Model):
     name = db.Column(db.String)
     interest = db.Column(db.ARRAY(db.String))
     location = db.Column(db.String)
+    location_coords = db.Column(db.ARRAY(db.String))
     dates = db.relationship('Date', back_populates='friend', lazy='dynamic')
 
     
@@ -15,6 +16,7 @@ class Friend(db.Model):
         friend_as_dict["name"]= self.name
         friend_as_dict["interest"]= self.interest
         friend_as_dict["location"]= self.location
+        friend_as_dict["location_coords"]= self.location_coords
         friend_as_dict["dates"]= [date.to_dict() for date in self.dates.all()]
         
         return friend_as_dict
@@ -23,7 +25,8 @@ class Friend(db.Model):
     def from_dict(cls, friend_data):
         new_friend= Friend(name=friend_data["name"],
                         interest=friend_data["interest"],
-                        location=friend_data["location"])
+                        location=friend_data["location"],
+                        location_coords=friend_data["location_coords"])
         return new_friend
     
     def update_friend(self, req_body):
@@ -37,6 +40,8 @@ class Friend(db.Model):
             if "dates" in req_body:
                 new_date = Date.from_dict(req_body["dates"])
                 self.dates.append(new_date)
+            if "location_coords" in req_body:
+                self.location_coords = req_body["location_coords"]
             # self.name= req_body["name"]
             # self.interest= req_body["interest"]
             # self.location= req_body["location"]
