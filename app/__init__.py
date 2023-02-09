@@ -29,6 +29,9 @@ def create_app(test_config=None):
         from .routes import dates_bp
         app.register_blueprint(dates_bp)
         
+        from .routes import recommendations_bp
+        app.register_blueprint(recommendations_bp)
+        
         CORS(app)
         return app
 

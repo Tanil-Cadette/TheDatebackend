@@ -3,10 +3,19 @@ from app.models.friends import Friend
 from app.models.dates import Date
 from flask import Blueprint, jsonify, abort, request, make_response
 from datetime import datetime
+import requests
+import time 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 
 friends_bp = Blueprint("friends", __name__, url_prefix="/friends")
 dates_bp = Blueprint("dates", __name__, url_prefix="/dates")
+recommendations_bp = Blueprint("recommendations", __name__, url_prefix="/recommendations")
 
 #__________________________________________________________________________________________________________
 #--------------------------------HELPER FUNCTIONS----------------------------------------------------------
@@ -196,8 +205,32 @@ def read_friend_dates(id):
   return jsonify(response_dict), 200
     
 
-
-
+#_________________________________________________________________________________________________________
+#-----------------------------GET RECOMMENDED PLACES------------------------------------------------------
+#_________________________________________________________________________________________________________ 
+@recommendations_bp.route("/<interest>/<location>", methods=["GET"])
+def get_recommended_places(interest, location):
+    # url = "https://maps.googleapis.com/maps/api/place/textsearch/json?query=" + interest + "in" + location + "&location=" + location + "&radius=10000&key=" + GOOGLE_API_KEY
+  url = "https://maps.googleapis.com/maps/api/place/textsearch/json?query=" + interest + "in" + location + "&radius=10000&key=" + GOOGLE_API_KEY
+  try:
+    response = requests.get(url)
+    if response.status_code == 200:
+      data = response.json()
+      data_list = data["results"]
+      results = []
+      for place in data_list:
+        results.append({
+          'name': place['name'],
+          'geometry': place['geometry']['location'],
+          'rating' : place['rating']
+        })
+      return jsonify(results)
+  except requests.exceptions.HTTPError as error:
+    return "An HTTP error occurred: " + str(error)
+  except requests.exceptions.RequestException as error:
+    return "A Request error occurred: " + str(error)
+      
+    
 
 
 
