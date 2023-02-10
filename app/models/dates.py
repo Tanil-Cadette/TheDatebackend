@@ -10,6 +10,8 @@ class Date(db.Model):
     date_completed = db.Column(db.Boolean, nullable= True, default=False)
     friend_id = db.Column(db.Integer, db.ForeignKey('friend.id'))
     friend = db.relationship('Friend', back_populates='dates')
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship('User', back_populates='dates')
     
     
     def to_dict(self):
@@ -25,8 +27,11 @@ class Date(db.Model):
         date_as_dict["category"]= self.category
         date_as_dict["rank"]= self.rank
         date_as_dict["date_completed"]= completed
-        if self.friend_id:
+        if self.friend:
             date_as_dict["friend_id"]= self.friend_id
+        if self.user:
+            date_as_dict["user_id"] = self.user_id
+        
         
         return date_as_dict
     

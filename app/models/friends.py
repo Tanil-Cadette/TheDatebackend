@@ -8,6 +8,8 @@ class Friend(db.Model):
     location = db.Column(db.String)
     location_coords = db.Column(db.ARRAY(db.String))
     dates = db.relationship('Date', back_populates='friend', lazy='dynamic')
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship('User', back_populates='friends')
 
     
     def to_dict(self):
@@ -18,6 +20,7 @@ class Friend(db.Model):
         friend_as_dict["location"]= self.location
         friend_as_dict["location_coords"]= self.location_coords
         friend_as_dict["dates"]= [date.to_dict() for date in self.dates.all()]
+        friend_as_dict["user_id"] = self.user_id
         
         return friend_as_dict
     
@@ -42,11 +45,6 @@ class Friend(db.Model):
                 self.dates.append(new_date)
             if "location_coords" in req_body:
                 self.location_coords = req_body["location_coords"]
-            # self.name= req_body["name"]
-            # self.interest= req_body["interest"]
-            # self.location= req_body["location"]
-            # new_date = Date.from_dict(req_body["dates"])
-            # self.dates.append(new_date)
         except KeyError as error:
             raise error
         

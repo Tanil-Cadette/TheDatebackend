@@ -19,6 +19,7 @@ def create_app(test_config=None):
         
         from app.models.dates import Date
         from app.models.friends import Friend
+        from app.models.user import User
         
         db.init_app(app)
         migrate.init_app(app, db)
@@ -31,6 +32,9 @@ def create_app(test_config=None):
         
         from .routes import recommendations_bp
         app.register_blueprint(recommendations_bp)
+        
+        from .routes import user_bp
+        app.register_blueprint(user_bp)
         
         CORS(app)
         return app

@@ -1,6 +1,7 @@
 from app import db
 from app.models.friends import Friend
 from app.models.dates import Date
+from app.models.user import User
 from flask import Blueprint, jsonify, abort, request, make_response
 from datetime import datetime
 import requests
@@ -16,6 +17,7 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 friends_bp = Blueprint("friends", __name__, url_prefix="/friends")
 dates_bp = Blueprint("dates", __name__, url_prefix="/dates")
 recommendations_bp = Blueprint("recommendations", __name__, url_prefix="/recommendations")
+user_bp = Blueprint("users", __name__, url_prefix="/users")
 
 #__________________________________________________________________________________________________________
 #--------------------------------HELPER FUNCTIONS----------------------------------------------------------
@@ -150,7 +152,7 @@ def update_date(id):
     date_dict = date.to_dict()
     db.session.commit()
 
-    return make_response(jsonify({date_dict}), 200)
+    return make_response(jsonify(date_dict), 200)
 #_________________________________________________________________________________________________________
 #-----------------------------DELETE DATE ----------------------------------------------------------------
 #_________________________________________________________________________________________________________ 
@@ -229,8 +231,71 @@ def get_recommended_places(interest, location):
     return "An HTTP error occurred: " + str(error)
   except requests.exceptions.RequestException as error:
     return "A Request error occurred: " + str(error)
-      
-    
+
+#_________________________________________________________________________________________________________
+#-------------------------------ADD USER------------------------------------------------------------------
+#_________________________________________________________________________________________________________
+@user_bp.route("", methods=["POST"])
+def create_user():
+  request_body = request.get_json()
+  
+  try: 
+    new_user= User.from_dict(request_body)
+  except KeyError:
+    if "name" not in request_body or "location" not in request_body or "interest" not in request_body:
+      return make_response({"details": "Missing required keys in request body"}, 400)
+  
+  db.session.add(new_user)
+  db.session.commit()
+  friend_dict= new_user.to_dict()
+  
+  return make_response(jsonify({"User": friend_dict}), 201)
+#_________________________________________________________________________________________________________
+#-------------------------------GET USERS---------------------------------------------------------------
+#_________________________________________________________________________________________________________  
+@user_bp.route("", methods=["GET"])
+def get_user():
+  users_list=[]
+  users= User.query.all()
+  
+  for user in users:
+    users_list.append(user.to_dict())
+  
+  return jsonify(users_list), 200
+
+@user_bp.route("/<id>", methods=["GET"])
+def get_one_user(id):
+  user= validate_model(Friend, id)
+  user_dict= user.to_dict()
+  
+  return jsonify(user_dict)
+
+#_________________________________________________________________________________________________________
+#-----------------------------UPDATE USER-----------------------------------------------------------------
+#_________________________________________________________________________________________________________ 
+@user_bp.route("/<id>", methods=["PATCH"])
+def update_user(id):
+  user= validate_model(User, id)
+  request_body= request.get_json()
+  
+  user.update_user(request_body)
+  user_dict= user.to_dict()
+  db.session.commit()
+  
+  return make_response(jsonify(user_dict), 200)
+
+#_________________________________________________________________________________________________________
+#-----------------------------DELETE USER-----------------------------------------------------------------
+#_________________________________________________________________________________________________________ 
+@user_bp.route("/<id>", methods=["DELETE"])
+def delete_user(id):
+  user= validate_model(User, id)
+  user_dict= user.to_dict()
+  
+  db.session.delete(user)
+  db.session.commit()
+  
+  return jsonify({'details': (f'{user_dict["name"]} account successfully deleted')})  
 
 
 
