@@ -212,8 +212,8 @@ def read_friend_dates(id):
 #_________________________________________________________________________________________________________ 
 @recommendations_bp.route("/<interest>/<location>", methods=["GET"])
 def get_recommended_places(interest, location):
-    # url = "https://maps.googleapis.com/maps/api/place/textsearch/json?query=" + interest + "in" + location + "&location=" + location + "&radius=10000&key=" + GOOGLE_API_KEY
-  url = "https://maps.googleapis.com/maps/api/place/textsearch/json?query=" + interest + "in" + location + "&radius=10000&key=" + GOOGLE_API_KEY
+    # url = "https://maps.googleapis.com/maps/api/place/textsearch/json?query=" + interest + "in" + location + "&location=" + location + "&radius=20000&key=" + GOOGLE_API_KEY
+  url = "https://maps.googleapis.com/maps/api/place/textsearch/json?query=" + interest + "in" + location + "&radius=20000&key=" + GOOGLE_API_KEY
   try:
     response = requests.get(url)
     if response.status_code == 200:
@@ -259,13 +259,14 @@ def get_user():
   users= User.query.all()
   
   for user in users:
+    
     users_list.append(user.to_dict())
   
   return jsonify(users_list), 200
 
 @user_bp.route("/<id>", methods=["GET"])
 def get_one_user(id):
-  user= validate_model(Friend, id)
+  user= validate_model(User, id)
   user_dict= user.to_dict()
   
   return jsonify(user_dict)
@@ -297,6 +298,44 @@ def delete_user(id):
   
   return jsonify({'details': (f'{user_dict["name"]} account successfully deleted')})  
 
+#_________________________________________________________________________________________________________
+#-----------------------------CREATE FRIEND FOR USER------------------------------------------------------
+#_________________________________________________________________________________________________________ 
+@user_bp.route("/<id>/friends", methods=["POST"])
+def create_friend_for_user(id):
+  user= validate_model(User, id)
+  request_body = request.get_json()
+  
+  try: 
+    new_friend= Friend.from_dict(request_body)
+  except KeyError:
+      return make_response({"details": "Missing required keys in request body"}, 400)
+    
+  new_friend= Friend.from_dict(request_body)
+  user.friends.append(new_friend)
+  
+  db.session.add(new_friend)
+  db.session.commit()
+  friend_dict= new_friend.to_dict()
+  
+  return make_response(jsonify({"user": friend_dict}), 201)
+
+#_________________________________________________________________________________________________________
+#-----------------------------GET USER WITH FRIENDS-------------------------------------------------------
+#_________________________________________________________________________________________________________ 
+@user_bp.route("/<id>/friends", methods=["GET"])
+def read_user_friends(id):
+  user= validate_model(User, id)
+  friend_id= []
+  
+  for friend in user.friends:
+    friend_dict= friend.to_dict()
+    friend_id.append(friend_dict)
+    
+  response_dict= user.to_dict()
+  response_dict["friends"]= friend_id
+  
+  return jsonify(response_dict), 200
 
 
 
