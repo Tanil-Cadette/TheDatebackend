@@ -283,7 +283,7 @@ def update_user(id):
   user_dict= user.to_dict()
   db.session.commit()
   
-  return make_response(jsonify(user_dict), 200)
+  return jsonify(user_dict), 200
 
 #_________________________________________________________________________________________________________
 #-----------------------------DELETE USER-----------------------------------------------------------------
